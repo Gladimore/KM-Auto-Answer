@@ -15,7 +15,7 @@ class QuizHandler {
   }
 
   showNotification(message, isSuccess = true) {
-  	alert(message);
+    alert(message)
   }
 
   getAllOptions() {
@@ -33,7 +33,7 @@ class QuizHandler {
   }
 
   async send() {
-    const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}`
+    const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. I only need the answer, nothing else. For example option 1.`
 
     try {
       const response = await fetch(
