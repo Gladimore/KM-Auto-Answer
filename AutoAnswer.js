@@ -2,7 +2,7 @@ class QuizHandler {
   constructor() {
     this.form = document.getElementById("quiz-form")
     this.tbody = this.form.querySelector("tbody")
-    this.model = "meta-llama/Llama-Vision-Free"
+    this.model = "meta-llama/Llama-Vision-Free
     this.password = "AI"
     this.question = document.querySelector("legend").innerText
     this.chatHistory = [
