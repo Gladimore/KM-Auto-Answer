@@ -2,14 +2,14 @@ class QuizHandler {
   constructor() {
     this.form = document.getElementById("quiz-form")
     this.tbody = this.form.querySelector("tbody")
-    this.model = "meta-llama/Llama-Vision-Free"
+    this.model = "meta-llama/Meta-Llama-3-8B-Instruct-Lite"
     this.password = "AI"
     this.question = document.querySelector("legend").innerText
     this.chatHistory = [
       {
-        role: "server",
+        role: "system",
         content:
-          "You're a helpful assistant that helps solve any problem, you only need to return the correct answer, none of the math, or nothing, just the answer. Keep your short, and your answer should always only be a given option.",
+          `You're a helpful assistant that helps solves problems, your response should only be like this: "Option 1", "Example 1"`,
       },
     ]
   }
