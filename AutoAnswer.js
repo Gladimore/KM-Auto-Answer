@@ -7,9 +7,9 @@ class QuizHandler {
     this.question = document.querySelector("legend").innerText
     this.chatHistory = [
       {
-        role: "server",
+        role: "system",
         content:
-          "You're a helpful assistant that helps solve any problem, you only need to return the correct answer, none of the math, or nothing, just the answer. Keep your short, and your answer should always only be a given option.",
+          `You're a helpful assistant that helps solves problems, your response should only be like this: "Option 1", "Example 1"`,
       },
     ]
   }
