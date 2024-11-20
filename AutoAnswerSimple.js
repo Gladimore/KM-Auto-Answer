@@ -67,10 +67,6 @@ class QuizHandler {
         { role: "user", content: prompt },
       ])
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
       this.handleResponse(res)
     } catch (error) {
       this.showNotification(`⚠ Error: ${error.message}`, false)
