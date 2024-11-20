@@ -1,17 +1,43 @@
+class AI {
+  constructor(apiUrl, model, key) {
+    this.apiUrl = apiUrl
+    this.model = model
+    this.key = key
+  }
+
+  async send(chatMessages = []) {
+    const response = await fetch(this.apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        chatMessages: chatMessages,
+        model: this.model,
+        key: this.key,
+      }),
+    })
+
+    return await response.json()
+  }
+}
+
 class QuizHandler {
   constructor() {
     this.form = document.getElementById("quiz-form")
     this.tbody = this.form.querySelector("tbody")
-    this.model = "meta-llama/Llama-Vision-Free
-    this.password = "AI"
+    this.model = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+    this.password = window.atob("aWx5c20=")
+    this.apiUrl = "https://llm-2-0.vercel.app/api/chat"
     this.question = document.querySelector("legend").innerText
-    this.chatHistory = [
+    this.chatMessages = [
       {
         role: "system",
         content:
-          `You're a helpful assistant that helps solves problems, your response should only be like this: "Option 1", "Example 1"`,
+          "Keep your answer short and simple, while also showing how you got that answer.",
       },
     ]
+    this.ai = new AI(this.apiUrl, this.model, this.password)
   }
 
   showNotification(message, isSuccess = true) {
@@ -36,26 +62,16 @@ class QuizHandler {
     const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. I only need the answer, nothing else. For example option 1.`
 
     try {
-      const response = await fetch(
-        "https://llm-xoyr.onrender.com/api/generate-text",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt,
-            model: this.model,
-            password: this.password,
-            chatHistory: this.chatHistory,
-          }),
-        },
-      )
+      const res = await ai.send([
+        ...this.chatMessages,
+        { role: "user", content: prompt },
+      ])
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const { data } = await response.json()
-      this.handleResponse(data)
+      this.handleResponse(res)
     } catch (error) {
       this.showNotification(`⚠ Error: ${error.message}`, false)
     }
