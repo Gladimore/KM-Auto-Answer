@@ -62,7 +62,7 @@ class QuizHandler {
     const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. I only need the answer, nothing else. For example option 1.`
 
     try {
-      const res = await ai.send([
+      const res = await this.ai.send([
         ...this.chatMessages,
         { role: "user", content: prompt },
       ])
