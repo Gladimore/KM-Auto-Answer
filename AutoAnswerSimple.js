@@ -41,7 +41,7 @@ class QuizHandler {
   }
 
   showNotification(message, isSuccess = true) {
-    alert(message)
+    console.log(message)
   }
 
   getAllOptions() {
@@ -59,7 +59,7 @@ class QuizHandler {
   }
 
   async send() {
-    const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. I only need the answer, nothing else. For example option 1.`
+    const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. Also explain how you got that answer.`
 
     try {
       const res = await this.ai.send([
