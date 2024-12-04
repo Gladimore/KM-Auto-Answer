@@ -1,20 +1,19 @@
 class AI {
-  constructor(apiUrl, model, key) {
+  constructor(apiUrl, model, password) {
     this.apiUrl = apiUrl
     this.model = model
-    this.key = key
+    this.password = password
   }
 
-  async send(chatMessages = []) {
+  async send(requestBody = []) {
     const response = await fetch(this.apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        chatMessages: chatMessages,
-        model: this.model,
-        key: this.key,
+        REQUEST: requestBody,
+        PASSWORD: this.password,
       }),
     })
 
@@ -24,20 +23,20 @@ class AI {
 
 class QuizHandler {
   constructor() {
-    this.form = document.getElementById("quiz-form")
-    this.tbody = this.form.querySelector("tbody")
-    this.model = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
-    this.password = window.atob("aWx5c20=")
-    this.apiUrl = "https://llm-2-0.vercel.app/api/chat"
-    this.question = document.querySelector("legend").innerText
+    this.form = document.getElementById("quiz-form");
+    this.tbody = this.form.querySelector("tbody");
+    this.model = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo";
+    this.password = //enter password here;
+    this.apiUrl = "https://llm-2-0.vercel.app/api/chat";
+    this.question = document.querySelector("legend").innerText;
     this.chatMessages = [
       {
         role: "system",
         content:
           "Keep your answer short and simple, while also showing how you got that answer.",
       },
-    ]
-    this.ai = new AI(this.apiUrl, this.model, this.password)
+    ];
+    this.ai = new AI(this.apiUrl, this.model, this.password);
   }
 
   showNotification(message, isSuccess = true) {
@@ -62,10 +61,11 @@ class QuizHandler {
     const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. Also explain how you got that answer.`
 
     try {
-      const res = await this.ai.send([
-        ...this.chatMessages,
-        { role: "user", content: prompt },
-      ])
+      const res = await this.ai.send({
+        messages: [...this.chatMessages, { role: "user", content: prompt }],
+        max_tokens: 512,
+        stream: false,
+      })
 
       this.handleResponse(res)
     } catch (error) {
