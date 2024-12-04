@@ -23,20 +23,20 @@ class AI {
 
 class QuizHandler {
   constructor() {
-    this.form = document.getElementById("quiz-form");
-    this.tbody = this.form.querySelector("tbody");
-    this.model = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo";
-    this.password = //enter password here;
-    this.apiUrl = "https://llm-2-0.vercel.app/api/chat";
-    this.question = document.querySelector("legend").innerText;
+    this.form = document.getElementById("quiz-form")
+    this.tbody = this.form.querySelector("tbody")
+    this.model = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+    this.password = ""; //enter password in the quoates
+      this.apiUrl = "https://llm-2-0.vercel.app/api/chat"
+    this.question = document.querySelector("legend").innerText
     this.chatMessages = [
       {
         role: "system",
         content:
           "Keep your answer short and simple, while also showing how you got that answer.",
       },
-    ];
-    this.ai = new AI(this.apiUrl, this.model, this.password);
+    ]
+    this.ai = new AI(this.apiUrl, this.model, this.password)
   }
 
   showNotification(message, isSuccess = true) {
