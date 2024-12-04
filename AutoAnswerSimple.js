@@ -27,7 +27,7 @@ class QuizHandler {
     this.tbody = this.form.querySelector("tbody")
     this.model = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
     this.password = ""; //enter password in the quoates
-      this.apiUrl = "https://llm-2-0.vercel.app/api/chat"
+    this.apiUrl = "https://llm-2-0.vercel.app/api/chat"
     this.question = document.querySelector("legend").innerText
     this.chatMessages = [
       {
@@ -65,6 +65,7 @@ class QuizHandler {
         messages: [...this.chatMessages, { role: "user", content: prompt }],
         max_tokens: 512,
         stream: false,
+        model: this.model,
       })
 
       this.handleResponse(res)
