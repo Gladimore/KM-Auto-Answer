@@ -33,7 +33,7 @@ class QuizHandler {
       {
         role: "system",
         content:
-          "Keep your answer short and simple, while also showing how you got that answer.",
+          "Be descriptive on how you got your answer. Have your answer be clear though, and have it at the top of text.",
       },
     ]
     this.ai = new AI(this.apiUrl, this.model, this.password)
