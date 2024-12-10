@@ -58,7 +58,7 @@ class QuizHandler {
   }
 
   async send() {
-    const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. Also explain how you got that answer.`
+    const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. Also explain how you got that answer. Show your answer after explinaing how you got it, and mkae usre your math is correct, or your answer is correct.`
 
     try {
       const res = await this.ai.send({
