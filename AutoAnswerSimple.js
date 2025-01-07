@@ -67,7 +67,12 @@ class QuizHandler {
   }
 
   showNotification(message, isSuccess = true) {
-    console.log(message);
+    // Using console.log for notifications instead of DOM manipulation
+    if (isSuccess) {
+      console.log(`✅ Success: ${message}`);
+    } else {
+      console.log(`⚠ Error: ${message}`);
+    }
   }
 
   getAllOptions() {
@@ -76,11 +81,32 @@ class QuizHandler {
       .join("; ");
   }
 
+  async sendToSmallerAI(answer) {
+    const smallerAIModel = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo";  // Use the smaller AI model identifier here
+    const prompt = `Extract the final answer from this explanation: ${answer}. Return only the answer without the explanation.`;
+
+    try {
+      const res = await this.togetherClient.send({
+        messages: [
+          { role: "system", content: "Extract the final answer from the explanation." },
+          { role: "user", content: prompt },
+        ],
+        max_tokens: 512,
+        stream: false,
+        model: smallerAIModel,  // Send the request to the smaller AI model
+      });
+
+      this.handleResponse(res); // Handle the response from the smaller AI
+    } catch (error) {
+      this.showNotification(`Error in smaller AI: ${error.message}`, false);
+    }
+  }
+
   handleResponse(response) {
     if (response) {
-      this.showNotification(`Answer received: ${response}`);
+      this.showNotification(`Final answer extracted: ${response}`);
     } else {
-      this.showNotification("⚠ No answer received", false);
+      this.showNotification("⚠ No final answer received", false);
     }
   }
 
@@ -95,9 +121,10 @@ class QuizHandler {
         model: this.model,
       });
 
-      this.handleResponse(res); // Handle the response from the API
+      // Once the main AI response is received, send it to the smaller AI for extraction
+      await this.sendToSmallerAI(res);
     } catch (error) {
-      this.showNotification(`⚠ Error: ${error.message}`, false);
+      this.showNotification(`Error: ${error.message}`, false);
     }
   }
 }
