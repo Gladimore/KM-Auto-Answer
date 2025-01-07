@@ -82,7 +82,7 @@ class QuizHandler {
   }
 
   async sendToSmallerAI(answer) {
-    const smallerAIModel = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo";  // Use the smaller AI model identifier here
+    const smallerAIModel = "meta-llama/Llama-3.2-3B-Instruct-Turbo";
     const prompt = `Extract the final answer from this explanation: ${answer}. Return only the answer without the explanation.`;
 
     try {
