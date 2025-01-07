@@ -53,7 +53,7 @@ class QuizHandler {
   constructor() {
     this.form = document.getElementById("quiz-form");
     this.tbody = this.form.querySelector("tbody");
-    this.model = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo";
+    this.model = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo";
     this.password = ""; // enter password in the quotes
     this.question = document.querySelector("legend").innerText;
     this.chatMessages = [
