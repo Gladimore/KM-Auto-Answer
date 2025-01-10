@@ -217,22 +217,13 @@ class QuizHandler {
         stream: false,
       });
 
-      this.handleResponse(res); // Handle the response from the smaller AI
+      return res; // Return the response from the smaller AI
     } catch (error) {
       this.showNotification(`Error in smaller AI: ${error.message}`, false);
     }
   }
 
-  handleResponse(response) {
-    if (response) {
-      this.showNotification(`Final answer extracted: ${response}`);
-      this.findAndClickBestOption(response); // Find and click the best matching option
-    } else {
-      this.showNotification("⚠ No final answer received", false);
-    }
-  }
-
-  async send() {
+  async validateAndFetchAnswer() {
     const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. Also explain how you got that answer. Show your answer after explaining how you got it, and make sure your math is correct, or your answer is correct.`;
 
     const body = {
@@ -252,10 +243,28 @@ class QuizHandler {
     };
 
     try {
-      const res = await this.openRouterClient.send(body);
+      const res = await this.openRouterClient.send(body);  // Get the answer from the first AI
 
-      // Once the main AI response is received, send it to the smaller AI for extraction
-      await this.sendToSmallerAI(res);
+      // Send the response to the smaller AI for validation
+      const smallerAnswer1 = await this.sendToSmallerAI(res);
+
+      // Call the main AI again and get a new answer
+      const res2 = await this.openRouterClient.send(body);
+
+      // Send the second response to the smaller AI
+      const smallerAnswer2 = await this.sendToSmallerAI(res2);
+
+      // Compare the two final answers from the smaller AIs
+      const similarity = calculateSimilarity(smallerAnswer1, smallerAnswer2);
+
+      // If the answers are similar enough, proceed
+      if (similarity > 80) {
+        this.showNotification("✅ Both smaller AI answers are similar.");
+        this.findAndClickBestOption(smallerAnswer1); // Click the best matching option
+      } else {
+        this.showNotification("⚠ Smaller AI answers do not match, recalling...");
+        this.validateAndFetchAnswer();  // Recall the process if the answers don't match
+      }
     } catch (error) {
       this.showNotification(`Error with model ${this.models[this.currentModelIndex]}: ${error.message}`, false);
 
@@ -263,7 +272,7 @@ class QuizHandler {
       if (this.currentModelIndex < this.models.length - 1) {
         this.currentModelIndex++;
         this.showNotification(`Trying model ${this.models[this.currentModelIndex]}...`);
-        this.send(); // Retry the request with the next model
+        this.validateAndFetchAnswer(); // Retry the request with the next model
       } else {
         this.showNotification("⚠ All models have failed.", false);
       }
@@ -272,4 +281,4 @@ class QuizHandler {
 }
 
 const quizHandler = new QuizHandler();
-quizHandler.send();
+quizHandler.validateAndFetchAnswer();
