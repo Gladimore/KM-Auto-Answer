@@ -55,7 +55,7 @@ class QuizHandler {
     this.form = document.getElementById("quiz-form");
     this.tbody = this.form.querySelector("tbody");
     this.model = "google/gemini-2.0-flash-thinking-exp:free";
-    this.password = ""; // enter password in the quotes
+    this.password = "ilysm"; // enter password in the quotes
     this.question = document.querySelector("legend").innerText;
     this.chatMessages = [
       {
@@ -68,7 +68,6 @@ class QuizHandler {
   }
 
   showNotification(message, isSuccess = true) {
-    // Using console.log for notifications instead of DOM manipulation
     if (isSuccess) {
       console.log(`✅ Success: ${message}`);
     } else {
@@ -77,9 +76,44 @@ class QuizHandler {
   }
 
   getAllOptions() {
-    return Array.from(this.tbody.querySelectorAll("tr"))
-      .map((option) => option.children[2].innerText)
-      .join("; ");
+    return Array.from(this.tbody.querySelectorAll("tr")).map(
+      (option) => option.children[2].innerText // Get the option text (column 3)
+    );
+  }
+
+  // Find the most similar option and simulate a click on the radio button
+  findAndClickMatchingOption(finalAnswer) {
+    const options = this.getAllOptions();
+    const threshold = 80; // Set threshold similarity to 80%
+
+    let highestSimilarity = 0;
+    let bestMatchOption = null;
+
+    options.forEach((option, index) => {
+      const similarity = calculateSimilarity(finalAnswer, option);
+      if (similarity > highestSimilarity && similarity >= threshold) {
+        highestSimilarity = similarity;
+        bestMatchOption = index;
+      }
+    });
+
+    if (bestMatchOption !== null) {
+      this.simulateOptionClick(bestMatchOption);
+    } else {
+      this.showNotification("⚠ No matching option found with sufficient similarity.", false);
+    }
+  }
+
+  // Simulate a click on the best matching radio button
+  simulateOptionClick(optionIndex) {
+    const radioButtons = this.tbody.querySelectorAll('input[type="radio"]');
+    const radioButton = radioButtons[optionIndex]; // Select the radio button by its index
+    if (radioButton) {
+      radioButton.click(); // Simulate a click on the radio button
+      this.showNotification(`✅ Option ${optionIndex + 1} clicked based on similarity.`);
+    } else {
+      this.showNotification(`⚠ No radio button found for option ${optionIndex + 1}`, false);
+    }
   }
 
   async sendToSmallerAI(answer) {
@@ -106,6 +140,7 @@ class QuizHandler {
   handleResponse(response) {
     if (response) {
       this.showNotification(`Final answer extracted: ${response}`);
+      this.findAndClickMatchingOption(response); // Find and click the best matching option
     } else {
       this.showNotification("⚠ No final answer received", false);
     }
@@ -139,6 +174,23 @@ class QuizHandler {
       this.showNotification(`Error: ${error.message}`, false);
     }
   }
+}
+
+function calculateSimilarity(str1, str2) {
+  let matches = 0;
+  const str1Words = str1.split(" ");
+  const str2Words = str2.split(" ");
+  
+  // Count common words between the two strings
+  str1Words.forEach(word => {
+    if (str2Words.includes(word)) {
+      matches++;
+    }
+  });
+  
+  // Calculate the similarity percentage
+  const similarity = (matches / str1Words.length) * 100;
+  return similarity; // Return the similarity score as a percentage
 }
 
 const quizHandler = new QuizHandler();
