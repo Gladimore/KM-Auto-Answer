@@ -42,6 +42,7 @@ class OpenRouterClient {
 
   async handleNormalResponse(response) {
     const json = await response.json();
+    console.log(json);
     const text = json.choices[0].message.content;
     this.callbacks.onTextReceived(text);
     this.callbacks.onDone();
