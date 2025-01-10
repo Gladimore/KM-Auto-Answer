@@ -117,7 +117,6 @@ class QuizHandler {
   constructor() {
     this.form = document.getElementById("quiz-form");
     this.tbody = this.form.querySelector("tbody");
-    this.model = "google/gemini-2.0-flash-thinking-exp:free";
     this.password = ""; // enter password in the quotes
     this.question = document.querySelector("legend").innerText;
     this.chatMessages = [
@@ -128,6 +127,16 @@ class QuizHandler {
       },
     ];
     this.openRouterClient = new OpenRouterClient(this.password); // Use OpenRouterClient here
+
+    // List of models to try in order
+    this.models = [
+      "google/gemini-2.0-flash-exp:free",
+      "google/gemini-2.0-flash-thinking-exp:free",
+      "meta-llama/llama-3.1-70b-instruct:free",
+      "meta-llama/llama-3.1-405b-instruct:free",
+    ];
+
+    this.currentModelIndex = 0; // Start with the first model
   }
 
   showNotification(message, isSuccess = true) {
@@ -227,7 +236,7 @@ class QuizHandler {
     const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. Also explain how you got that answer. Show your answer after explaining how you got it, and make sure your math is correct, or your answer is correct.`;
 
     const body = {
-      model: this.model,
+      model: this.models[this.currentModelIndex], // Use the current model
       max_tokens: 512,
       messages: [
         {
@@ -248,7 +257,16 @@ class QuizHandler {
       // Once the main AI response is received, send it to the smaller AI for extraction
       await this.sendToSmallerAI(res);
     } catch (error) {
-      this.showNotification(`Error: ${error.message}`, false);
+      this.showNotification(`Error with model ${this.models[this.currentModelIndex]}: ${error.message}`, false);
+
+      // If the model fails, try the next one in the list
+      if (this.currentModelIndex < this.models.length - 1) {
+        this.currentModelIndex++;
+        this.showNotification(`Trying model ${this.models[this.currentModelIndex]}...`);
+        this.send(); // Retry the request with the next model
+      } else {
+        this.showNotification("⚠ All models have failed.", false);
+      }
     }
   }
 }
