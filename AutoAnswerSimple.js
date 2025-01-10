@@ -96,7 +96,6 @@ class QuizHandler {
 
     options.forEach((option, index) => {
       const similarity = calculateSimilarity(finalAnswer, option);
-      console.log(`Comparing: "${finalAnswer}" with option "${option}" - Similarity: ${similarity}%`);
       if (similarity > highestSimilarity && similarity >= threshold) {
         highestSimilarity = similarity;
         bestMatchOption = index;
