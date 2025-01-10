@@ -1,3 +1,8 @@
+// Configuration object to control automatic clicking behavior
+const config = {
+  autoClickSubmitButton: true, // Set this to true to automatically click the submit button
+};
+
 class OpenRouterClient {
   constructor(password) {
     this.apiKey = null;
@@ -55,7 +60,7 @@ class QuizHandler {
     this.form = document.getElementById("quiz-form");
     this.tbody = this.form.querySelector("tbody");
     this.model = "google/gemini-2.0-flash-thinking-exp:free";
-    this.password = "ilysm"; // enter password in the quotes
+    this.password = ""; // enter password in the quotes
     this.question = document.querySelector("legend").innerText;
     this.chatMessages = [
       {
@@ -91,6 +96,7 @@ class QuizHandler {
 
     options.forEach((option, index) => {
       const similarity = calculateSimilarity(finalAnswer, option);
+      console.log(`Comparing: "${finalAnswer}" with option "${option}" - Similarity: ${similarity}%`);
       if (similarity > highestSimilarity && similarity >= threshold) {
         highestSimilarity = similarity;
         bestMatchOption = index;
@@ -99,6 +105,9 @@ class QuizHandler {
 
     if (bestMatchOption !== null) {
       this.simulateOptionClick(bestMatchOption);
+      if (config.autoClickSubmitButton) {
+        this.enableAndSubmit(); // Automatically click the submit button if enabled in config
+      }
     } else {
       this.showNotification("⚠ No matching option found with sufficient similarity.", false);
     }
@@ -113,6 +122,18 @@ class QuizHandler {
       this.showNotification(`✅ Option ${optionIndex + 1} clicked based on similarity.`);
     } else {
       this.showNotification(`⚠ No radio button found for option ${optionIndex + 1}`, false);
+    }
+  }
+
+  // Enable the submit button and submit the form
+  enableAndSubmit() {
+    const submitBtn = document.getElementById("submitBtn");
+    if (submitBtn) {
+      submitBtn.removeAttribute("disabled"); // Enable the submit button
+      submitBtn.click(); // Simulate a click on the submit button
+      this.showNotification("✅ Form submitted successfully.");
+    } else {
+      this.showNotification("⚠ Submit button not found", false);
     }
   }
 
