@@ -1,10 +1,10 @@
-class TogetherClient {
+class OpenRouterClient {
   constructor(password) {
     this.apiKey = null;
     this.headers = {
       "Content-Type": "application/json",
     };
-    this.apiEndpoint = "https://api.together.xyz/v1/chat/completions";
+    this.apiEndpoint = "https://openrouter.ai/api/v1/chat/completions";
     this.password = password;
   }
 
@@ -53,7 +53,7 @@ class QuizHandler {
   constructor() {
     this.form = document.getElementById("quiz-form");
     this.tbody = this.form.querySelector("tbody");
-    this.model = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo";
+    this.model = "google/gemini-2.0-flash-thinking-exp:free";
     this.password = ""; // enter password in the quotes
     this.question = document.querySelector("legend").innerText;
     this.chatMessages = [
@@ -63,7 +63,7 @@ class QuizHandler {
           "Be descriptive on how you got your answer. Have your answer be clear though, and have it at the top of text.",
       },
     ];
-    this.togetherClient = new TogetherClient(this.password); // Use TogetherClient here
+    this.openRouterClient = new OpenRouterClient(this.password); // Use OpenRouterClient here
   }
 
   showNotification(message, isSuccess = true) {
@@ -82,18 +82,18 @@ class QuizHandler {
   }
 
   async sendToSmallerAI(answer) {
-    const smallerAIModel = "meta-llama/Llama-3.2-3B-Instruct-Turbo";
+    const smallerAIModel = "meta-llama/llama-3.2-3b-instruct:free";
     const prompt = `Extract the final answer from this explanation: ${answer}. Return only the answer without the explanation.`;
 
     try {
-      const res = await this.togetherClient.send({
+      const res = await this.openRouterClient.send({
+        model: smallerAIModel,
         messages: [
           { role: "system", content: "Extract the final answer from the explanation." },
           { role: "user", content: prompt },
         ],
         max_tokens: 512,
         stream: false,
-        model: smallerAIModel,  // Send the request to the smaller AI model
       });
 
       this.handleResponse(res); // Handle the response from the smaller AI
@@ -113,13 +113,24 @@ class QuizHandler {
   async send() {
     const prompt = `These are the options: ${this.getAllOptions()}. To this problem: ${this.question}. Also explain how you got that answer. Show your answer after explaining how you got it, and make sure your math is correct, or your answer is correct.`;
 
+    const body = {
+      model: this.model,
+      max_tokens: 512,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Be descriptive on how you got your answer. Have your answer be clear though, and have it at the top of text.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    };
+
     try {
-      const res = await this.togetherClient.send({
-        messages: [...this.chatMessages, { role: "user", content: prompt }],
-        max_tokens: 512,
-        stream: false,
-        model: this.model,
-      });
+      const res = await this.openRouterClient.send(body);
 
       // Once the main AI response is received, send it to the smaller AI for extraction
       await this.sendToSmallerAI(res);
