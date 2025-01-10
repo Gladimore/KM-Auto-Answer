@@ -1,3 +1,8 @@
+// Configuration object to control automatic clicking behavior
+const config = {
+  autoClickSubmitButton: true, // Set this to true to automatically click the submit button
+};
+
 // Function to calculate the Levenshtein distance between two strings
 function levenshtein(a, b) {
   const tmp = [];
