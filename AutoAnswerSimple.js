@@ -1,7 +1,60 @@
-// Configuration object to control automatic clicking behavior
-const config = {
-  autoClickSubmitButton: true, // Set this to true to automatically click the submit button
-};
+// Function to calculate the Levenshtein distance between two strings
+function levenshtein(a, b) {
+  const tmp = [];
+
+  // Ensure both strings have a length of at least 1
+  const alen = a.length;
+  const blen = b.length;
+
+  // Create a matrix (2D array) to store the intermediate results
+  for (let i = 0; i <= alen; i++) {
+    tmp[i] = [i];
+  }
+
+  for (let j = 0; j <= blen; j++) {
+    tmp[0][j] = j;
+  }
+
+  for (let i = 1; i <= alen; i++) {
+    for (let j = 1; j <= blen; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+
+      // Calculate the minimum cost for insertion, deletion, and substitution
+      tmp[i][j] = Math.min(
+        tmp[i - 1][j] + 1, // Deletion
+        tmp[i][j - 1] + 1, // Insertion
+        tmp[i - 1][j - 1] + cost // Substitution
+      );
+    }
+  }
+
+  // Return the Levenshtein distance
+  return tmp[alen][blen];
+}
+
+// Function to normalize strings by removing punctuation, extra spaces, and converting to lowercase
+function normalize(str) {
+  return str
+    .toLowerCase() // Convert to lowercase
+    .replace(/[^\w\s]|_/g, "") // Remove punctuation
+    .replace(/\s+/g, " "); // Normalize spaces (collapse multiple spaces into one)
+}
+
+// Function to calculate the similarity percentage using Levenshtein distance
+function calculateSimilarity(str1, str2) {
+  // Normalize the strings
+  const normalizedStr1 = normalize(str1);
+  const normalizedStr2 = normalize(str2);
+
+  // Calculate the Levenshtein distance between the two normalized strings
+  const levDistance = levenshtein(normalizedStr1, normalizedStr2);
+
+  // Calculate similarity as a percentage (1 - distance/max_length) * 100
+  const maxLength = Math.max(normalizedStr1.length, normalizedStr2.length);
+  const similarity = ((maxLength - levDistance) / maxLength) * 100;
+
+  return similarity; // Return the similarity as a percentage
+}
 
 class OpenRouterClient {
   constructor(password) {
@@ -86,17 +139,16 @@ class QuizHandler {
     );
   }
 
-  // Find the most similar option and simulate a click on the radio button
-  findAndClickMatchingOption(finalAnswer) {
+  // Find the option with the highest similarity and simulate a click on the radio button
+  findAndClickBestOption(finalAnswer) {
     const options = this.getAllOptions();
-    const threshold = 80; // Set threshold similarity to 80%
-
+    
     let highestSimilarity = 0;
     let bestMatchOption = null;
 
     options.forEach((option, index) => {
       const similarity = calculateSimilarity(finalAnswer, option);
-      if (similarity > highestSimilarity && similarity >= threshold) {
+      if (similarity > highestSimilarity) {
         highestSimilarity = similarity;
         bestMatchOption = index;
       }
@@ -108,7 +160,7 @@ class QuizHandler {
         this.enableAndSubmit(); // Automatically click the submit button if enabled in config
       }
     } else {
-      this.showNotification("⚠ No matching option found with sufficient similarity.", false);
+      this.showNotification("⚠ No matching option found.", false);
     }
   }
 
@@ -118,7 +170,7 @@ class QuizHandler {
     const radioButton = radioButtons[optionIndex]; // Select the radio button by its index
     if (radioButton) {
       radioButton.click(); // Simulate a click on the radio button
-      this.showNotification(`✅ Option ${optionIndex + 1} clicked based on similarity.`);
+      this.showNotification(`✅ Option ${optionIndex + 1} clicked based on highest similarity.`);
     } else {
       this.showNotification(`⚠ No radio button found for option ${optionIndex + 1}`, false);
     }
@@ -160,7 +212,7 @@ class QuizHandler {
   handleResponse(response) {
     if (response) {
       this.showNotification(`Final answer extracted: ${response}`);
-      this.findAndClickMatchingOption(response); // Find and click the best matching option
+      this.findAndClickBestOption(response); // Find and click the best matching option
     } else {
       this.showNotification("⚠ No final answer received", false);
     }
@@ -194,23 +246,6 @@ class QuizHandler {
       this.showNotification(`Error: ${error.message}`, false);
     }
   }
-}
-
-function calculateSimilarity(str1, str2) {
-  let matches = 0;
-  const str1Words = str1.split(" ");
-  const str2Words = str2.split(" ");
-  
-  // Count common words between the two strings
-  str1Words.forEach(word => {
-    if (str2Words.includes(word)) {
-      matches++;
-    }
-  });
-  
-  // Calculate the similarity percentage
-  const similarity = (matches / str1Words.length) * 100;
-  return similarity; // Return the similarity score as a percentage
 }
 
 const quizHandler = new QuizHandler();
